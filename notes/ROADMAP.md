@@ -70,7 +70,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
   the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
   the test-build workflow and every fix, for test releases.
 - Test releases: push the dev branch to `test-release` (tag pushes are refused by the git proxy); the workflow tags `<version>-test.<run>`. Only when the user says.
-- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package, feat/parked-app-replaces-media.
+- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package, feat/parked-app-replaces-media, feat/voice-search.
 
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
@@ -118,3 +118,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
   try each candidate until one has the (int) constructor. Issue drafted for the user to file.
 - Request: hide the media entry of an app that is also a parked app → branch
   feat/parked-app-replaces-media (toggle "One icon for apps that are both").
+
+- Request: voice for search fields when no assistant → branch feat/voice-search (mic button
+  in SearchTemplate via the phone SpeechRecognizer). GrapheneOS ships no recognizer; needs one
+  that registers as a RecognitionService (check FUTO Voice Input).
