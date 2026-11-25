@@ -120,8 +120,8 @@ internal fun StandaloneAppScreen(
                 // surface rather than a restart (start() relaunches it, which would end a video, or
                 // the audio an "audio only" app kept playing through the drive).
                 resumeInstead = { started && (resumeAfterDrive || audioOnly) })
-            // A quiet reminder that this isn't an Android Auto app.
-            Text(
+            // A quiet reminder that this isn't an Android Auto app (unless turned off in the settings).
+            if (runtime.settings.standaloneBanner) Text(
                 stringResource(R.string.standalone_not_native),
                 style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
