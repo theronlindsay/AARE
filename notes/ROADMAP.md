@@ -69,7 +69,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
 - One branch per fix, cut from upstream main (e.g. `fix/touch-placeholder-panel`), pushed to
   the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
   the test-build workflow and every fix, for test releases.
-- Test releases: push a tag like `1.6.0-test.1` on the dev branch, only when the user says.
+- Test releases: push the dev branch to `test-release` (tag pushes are refused by the git proxy); the workflow tags `<version>-test.<run>`. Only when the user says.
 - Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package.
 
 ## Constraint

@@ -1,7 +1,8 @@
 # Side-by-side test builds for Obtainium. Fork-only: not part of any upstream pull request.
 #
-# Runs only when a tag like 1.6.0-test.3 is pushed (nothing on ordinary pushes), and publishes
-# aare-test-<tag>.apk as a GitHub release whose tag equals the app's versionName, which is what
+# Runs only on a push to the test-release branch (nothing on ordinary pushes), and publishes
+# aare-test-<version>.apk as a GitHub release whose tag (e.g. 1.6.0-test.3, the run number last)
+# equals the app's versionName, which is what
 # Obtainium compares. The APK is net.prototux.aare.test ("AARE Test"). It replaces the regular
 # app while testing: uninstall that first (both claim the same car-host permission and provider).
 #
@@ -11,7 +12,7 @@ name: Test build
 
 on:
   push:
-    tags: ["*-test.*"]
+    branches: [test-release]
 
 jobs:
   build:
@@ -29,15 +30,13 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
-      - name: Version from the tag
+      - name: Version from the build file and the run number
         run: |
-          # 1.6.0-test.3 -> versionName 1.6.0-test.3, versionCode 10600 * 1000 + 3
-          TAG="$GITHUB_REF_NAME"
-          BASE="${TAG%%-test.*}"
-          N="${TAG##*-test.}"
-          [[ "$N" =~ ^[0-9]+$ ]] || { echo "::error::tag must look like 1.6.0-test.3"; exit 1; }
+          # versionName 1.6.0 and run 3 -> 1.6.0-test.3, versionCode 10600 * 1000 + 3
+          BASE=$(sed -n 's/^ *versionName = "\(.*\)"$/\1/p' app/build.gradle.kts)
+          N="$GITHUB_RUN_NUMBER"
           IFS=. read -r MAJOR MINOR PATCH <<< "$BASE"
-          echo "VERSION=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION=$BASE-test.$N" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$(( (${MAJOR:-0} * 10000 + ${MINOR:-0} * 100 + ${PATCH:-0}) * 1000 + N ))" >> "$GITHUB_ENV"
 
       - name: Signing key present
@@ -70,6 +69,6 @@ jobs:
 
       - name: Publish
         run: |
-          gh release create "$GITHUB_REF_NAME" --title "AARE Test $VERSION" \
+          gh release create "$VERSION" --target "$GITHUB_SHA" --title "AARE Test $VERSION" \
             --notes "Test build (net.prototux.aare.test) from $(git rev-parse --short HEAD). Uninstall the regular AARE first; this replaces it while testing." \
             -- out/*
