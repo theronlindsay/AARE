@@ -1,0 +1,75 @@
+# Side-by-side test builds for Obtainium. Fork-only: not part of any upstream pull request.
+#
+# Runs only when a tag like 1.6.0-test.3 is pushed (nothing on ordinary pushes), and publishes
+# aare-test-<tag>.apk as a GitHub release whose tag equals the app's versionName, which is what
+# Obtainium compares. The APK is net.prototux.aare.test ("AARE Test"), so it installs next to
+# the regular app.
+#
+# Needs these repository secrets (a dedicated test key, kept the same so updates install):
+#   TEST_KEYSTORE_BASE64, TEST_KEYSTORE_PASSWORD, TEST_KEY_ALIAS, TEST_KEY_PASSWORD
+name: Test build
+
+on:
+  push:
+    tags: ["*-test.*"]
+
+jobs:
+  build:
+    name: Build and publish the test APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+
+      - name: Version from the tag
+        run: |
+          # 1.6.0-test.3 -> versionName 1.6.0-test.3, versionCode 10600 * 1000 + 3
+          TAG="$GITHUB_REF_NAME"
+          BASE="${TAG%%-test.*}"
+          N="${TAG##*-test.}"
+          [[ "$N" =~ ^[0-9]+$ ]] || { echo "::error::tag must look like 1.6.0-test.3"; exit 1; }
+          IFS=. read -r MAJOR MINOR PATCH <<< "$BASE"
+          echo "VERSION=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$(( (${MAJOR:-0} * 10000 + ${MINOR:-0} * 100 + ${PATCH:-0}) * 1000 + N ))" >> "$GITHUB_ENV"
+
+      - name: Signing key present
+        env:
+          K: ${{ secrets.TEST_KEYSTORE_BASE64 }}
+        run: |
+          # A random debug key would change every build and Obtainium could not update.
+          [ -n "$K" ] || { echo "::error::set the TEST_KEYSTORE_BASE64 secret (and the password/alias ones)"; exit 1; }
+
+      - name: Test package name and label
+        run: .github/test-build/patch.sh .test "AARE Test"
+
+      - name: Tests
+        run: ./gradlew --no-daemon :aap:test :app:testDebugUnitTest :headunit:test
+
+      - name: Signed APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TEST_KEYSTORE_BASE64 }}
+          AARE_KEYSTORE_PASSWORD: ${{ secrets.TEST_KEYSTORE_PASSWORD }}
+          AARE_KEY_ALIAS: ${{ secrets.TEST_KEY_ALIAS }}
+          AARE_KEY_PASSWORD: ${{ secrets.TEST_KEY_PASSWORD }}
+        run: |
+          export AARE_KEYSTORE="$RUNNER_TEMP/test.jks"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$AARE_KEYSTORE"
+          ./gradlew --no-daemon :app:assembleRelease -PversionName="$VERSION" -PversionCode="$VERSION_CODE" -Paare.updateCheck=false
+          rm -f "$AARE_KEYSTORE"
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk "out/aare-test-$VERSION.apk"
+          (cd out && sha256sum -- * > SHA256SUMS)
+
+      - name: Publish
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "AARE Test $VERSION" \
+            --notes "Test build (net.prototux.aare.test) from $(git rev-parse --short HEAD). Installs next to the regular AARE." \
+            -- out/*
