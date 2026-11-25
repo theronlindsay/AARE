@@ -103,6 +103,7 @@ object AppQuirks {
         "com.google.android.apps.gmm.fishfood:1063030346:",
         "com.google.android.apps.gmm:1064025541:",
         "com.google.android.apps.maps:1066723824:",
+        "org.ungoogled.android.apps.maps:1066723824:", // Google Maps, patched and renamed
         "com.google.android.apps.gmm.qp:1066034479:",
         "com.locnall.KimGiSa:40402:",
         "$WAZE:1023000:",
@@ -120,10 +121,11 @@ object AppQuirks {
 
     /**
      * Packages whose notifications are never read as conversations (default):
-     * the system, the Play Store, downloads and Google Maps post MessagingStyle-like notifications
+     * the system, the Play Store, downloads and Google Maps (also renamed, as Ungoogled Maps) post MessagingStyle-like notifications
      * that aren't messages.
      */
-    val NOT_CONVERSATIONS = setOf("android", "com.android.vending", "com.android.providers.downloads", "com.google.android.apps.maps")
+    val NOT_CONVERSATIONS = setOf("android", "com.android.vending", "com.android.providers.downloads", "com.google.android.apps.maps",
+        "org.ungoogled.android.apps.maps")
 
     /**
      * Messaging apps whose voice messages sometimes come without their audio (a null or empty data
