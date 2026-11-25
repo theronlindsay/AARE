@@ -8,6 +8,7 @@ import android.os.IBinder
 import android.util.Log
 import android.view.Surface
 import net.prototux.aare.BuildConfig
+import net.prototux.aare.DiagLog
 import net.prototux.aare.audio.CaptureMethods
 import net.prototux.aare.root.RootHandover
 import rikka.shizuku.Shizuku
@@ -44,10 +45,21 @@ class AppLauncher(private val context: Context, key: String = "launch") {
     // --- root path ---
     private var rootHelper: RootHandover.Helper? = null
 
+    /** Why the last [connect] or [start] failed, for the car screen and the diagnostics log; null if it didn't. */
+    @Volatile var failure: Failure? = null
+        private set
+
     /** Connects via Shizuku if available, else root. Blocks up to a few seconds; false if neither works. */
     fun connect(): Boolean {
-        if (CaptureMethods.shizukuAvailable()) return connectShizuku()
-        return connectRoot()
+        val ok = if (CaptureMethods.shizukuAvailable()) connectShizuku() else connectRoot()
+        if (!ok) fail(if (CaptureMethods.shizukuAvailable()) Failure.HELPER else Failure.NO_PRIVILEGE,
+            if (CaptureMethods.shizukuAvailable()) "the Shizuku helper didn't start" else "Shizuku isn't running (or AARE isn't allowed to use it), and there's no root")
+        return ok
+    }
+
+    private fun fail(why: Failure, detail: String) {
+        failure = why
+        DiagLog.add("parked app: $detail")
     }
 
     private fun connectShizuku(): Boolean {
@@ -73,6 +85,7 @@ class AppLauncher(private val context: Context, key: String = "launch") {
     fun start(surface: Surface, width: Int, height: Int, dpi: Int, pkg: String, keepDisplayAwake: Boolean): Int =
         runCatching { host?.start(surface, width, height, dpi, pkg, keepDisplayAwake) ?: -1 }
             .onFailure { Log.w(TAG, "start", it) }.getOrDefault(-1)
+            .also { if (it < 0) fail(Failure.DISPLAY, "couldn't create the car-screen display for $pkg (${width}x$height, ${dpi} dpi)") }
 
     /** Like [start], but opens [pkg]'s voice UI (see [ILaunchHost.startAssistant]). */
     fun startAssistant(surface: Surface, width: Int, height: Int, dpi: Int, pkg: String): Int =
@@ -98,6 +111,16 @@ class AppLauncher(private val context: Context, key: String = "launch") {
         rootHelper?.stop()
         rootHelper = null
         host = null
+    }
+
+    /** Why an app couldn't be put on the car screen. */
+    enum class Failure {
+        /** Neither Shizuku (running, and AARE allowed) nor root. */
+        NO_PRIVILEGE,
+        /** Shizuku is there, but its helper process didn't come up. */
+        HELPER,
+        /** The helper ran, but no display could be created. */
+        DISPLAY,
     }
 
     companion object {

@@ -613,6 +613,9 @@
     <string name="standalone_need_root">Needs root or Shizuku. Set one up in Audio settings, then come back.</string>
     <string name="standalone_not_native">Not an Android Auto app · parked use</string>
     <string name="standalone_starting">Starting…</string>
+    <string name="standalone_failed_no_privilege">Can\'t open this app on the car screen: start Shizuku on the phone (and allow AARE in it), then open the app again.</string>
+    <string name="standalone_failed_helper">Can\'t open this app on the car screen: Shizuku\'s helper didn\'t start. Restart Shizuku, then open the app again.</string>
+    <string name="standalone_failed_display">Can\'t open this app on the car screen: the phone refused the car-screen display. See AARE\'s diagnostics log.</string>
     <string name="standalone_paused_driving">Paused while driving.</string>
     <string name="standalone_audio_only_driving">Screen hidden while driving. The sound goes on.</string>
     <string name="standalone_rule_title">While driving</string>

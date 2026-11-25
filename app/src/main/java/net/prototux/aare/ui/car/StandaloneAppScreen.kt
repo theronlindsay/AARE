@@ -13,6 +13,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.runtime.Composable
@@ -75,6 +76,8 @@ internal fun StandaloneAppScreen(
     val context = LocalContext.current
     val launcher = remember(packageName) { AppLauncher(context) }
     var started by remember(packageName) { mutableStateOf(false) }
+    /** Set when starting failed: what to say instead of loading forever. */
+    var failure by remember(packageName) { mutableStateOf<AppLauncher.Failure?>(null) }
 
     val backOverride by rememberUpdatedState(onBack)
     DisposableEffect(packageName) {
@@ -115,7 +118,7 @@ internal fun StandaloneAppScreen(
         if (!driving) {
             LaunchedAppSurface(launcher, packageName, runtime.densityDpi, Modifier.fillMaxSize(),
                 start = { surface, w, h -> launcher.keyboardInCar(!runtime.ui.drivingRestricted); launcher.start(surface, w, h, runtime.densityDpi, packageName, runtime.settings.standaloneKeepScreenAwake) },
-                onStarted = { started = it },
+                onStarted = { ok -> started = ok; failure = if (ok) null else launcher.failure ?: AppLauncher.Failure.DISPLAY },
                 // Back from a drive: the app kept running on its display, so it gets the new
                 // surface rather than a restart (start() relaunches it, which would end a video, or
                 // the audio an "audio only" app kept playing through the drive).
@@ -128,7 +131,13 @@ internal fun StandaloneAppScreen(
                 modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth()
                     .background(Color.Black.copy(alpha = 0.35f)).padding(horizontal = 12.dp, vertical = 3.dp),
             )
-            if (!started) Placeholder(stringResource(R.string.standalone_starting), loading = true)
+            val failed = failure
+            if (failed != null) Placeholder(stringResource(when (failed) {
+                AppLauncher.Failure.NO_PRIVILEGE -> R.string.standalone_failed_no_privilege
+                AppLauncher.Failure.HELPER -> R.string.standalone_failed_helper
+                AppLauncher.Failure.DISPLAY -> R.string.standalone_failed_display
+            }), loading = false, icon = Icons.Rounded.ErrorOutline)
+            else if (!started) Placeholder(stringResource(R.string.standalone_starting), loading = true)
         } else {
             if (audioOnly) Placeholder(stringResource(R.string.standalone_audio_only_driving), loading = false, icon = Icons.Rounded.Headphones)
             else Placeholder(stringResource(R.string.standalone_paused_driving), loading = false, icon = Icons.Rounded.PauseCircle)
