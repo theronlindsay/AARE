@@ -70,7 +70,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
   the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
   the test-build workflow and every fix, for test releases.
 - Test releases: push the dev branch to `test-release` (tag pushes are refused by the git proxy); the workflow tags `<version>-test.<run>`. Only when the user says.
-- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package, feat/parked-app-replaces-media, feat/voice-search.
+- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package, feat/parked-app-replaces-media, feat/voice-search, feat/clock-in-bell.
 
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
@@ -122,3 +122,6 @@ PR branches are cut from upstream `main` per feature; this file stays on
 - Request: voice for search fields when no assistant → branch feat/voice-search (mic button
   in SearchTemplate via the phone SpeechRecognizer). GrapheneOS ships no recognizer; needs one
   that registers as a RecognitionService (check FUTO Voice Input).
+- Request: clock + bell as one button like AA → feat/clock-in-bell (toggle, off by default).
+- Request: disable the home screen notification card → already possible (dashboard cards editor).
+- Lapin is the only speech service installed on the phone; voice search depends on it working (needs the Lapin server).
