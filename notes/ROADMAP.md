@@ -63,3 +63,20 @@ PR branches are cut from upstream `main` per feature; this file stays on
 
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
+
+## DriveDeck findings (read 2026-11-25; AGPL-3.0 — reimplement ideas only, copy no code)
+- Touch: treats head-unit taps as already in projected-video coordinates; ignores the
+  declared panel size (a unit declaring 1258x708 with 800x480 video). Supports our fix.
+- Parked display: owned by a Shizuku user service. Preferred path is VirtualDeviceManager
+  (shell-owned companion association, VirtualDisplayConfig flags PUBLIC|OWN_CONTENT_ONLY|
+  DESTROY_CONTENT_ON_REMOVAL|TRUSTED, setIgnoreActivitySizeRestrictions on API 36+, a
+  VirtualTouchscreen + VirtualDpad tied to the display). Fallback: DisplayManager with the
+  same flags + IME policy local.
+- Launch: `am start --display` / startActivityAsUser as com.android.shell; no windowing mode;
+  no global settings changes.
+- Guest density: raised until the short side is <=360dp (strip screens) or <=540dp, so apps use
+  their phone layout. AARE currently gives guests the car's density → likely cause of apps
+  not looking native.
+- Multi-touch up to 10 pointers.
+- Voice: wake word, sherpa-onnx VAD, on-device Gemma (LiteRT-LM) for STT + intents, Piper/Kokoro
+  TTS; optional cloud via LiveKit. GrapheneOS has no system speech recognizer.
