@@ -15,23 +15,32 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.prototux.aare.R
+import net.prototux.aare.notify.VoiceDictation
 import net.prototux.aare.ui.theme.LocalCarDimens
 
 /**
  * SearchTemplate: a search field in the header, results below, and our on-screen keyboard.
- * Typing is refused while driving (like Android Auto); results stay usable.
+ * Typing is refused while driving (like Android Auto); results stay usable. A microphone button
+ * searches by voice, parked or driving, with the phone's speech recognizer (as voice replies do),
+ * when the phone has one.
  */
 @Composable
 internal fun SearchTemplateView(t: SearchTemplate) {
@@ -47,6 +56,28 @@ internal fun SearchTemplateView(t: SearchTemplate) {
         query = text
         safeCall("onSearchTextChanged") { delegate.sendSearchTextChanged(text, host.done) }
     }
+
+    // Voice search: what the field says meanwhile (listening, or why it didn't work), else the app's hint.
+    val context = LocalContext.current
+    val voiceAvailable = remember { android.speech.SpeechRecognizer.isRecognitionAvailable(context) }
+    var voiceStatus by remember { mutableStateOf<Int?>(null) }
+    val dictation = remember {
+        VoiceDictation(context,
+            onPartial = { text -> query = text },
+            onResult = { text ->
+                voiceStatus = null
+                changed(text)
+                safeCall("onSearchSubmitted") { delegate.sendSearchSubmitted(text, host.done) }
+            },
+            onFailure = { failure ->
+                voiceStatus = when (failure) {
+                    VoiceDictation.Failure.NotHeard -> R.string.msg_voice_reply_not_heard
+                    VoiceDictation.Failure.TryAgain -> R.string.msg_voice_reply_try_again
+                    VoiceDictation.Failure.Unavailable -> R.string.msg_voice_reply_unavailable
+                }
+            })
+    }
+    DisposableEffect(dictation) { onDispose { dictation.cancel() } }
     val sink = object : KeyboardSink {
         override fun type(text: String) = changed(query + text)
         override fun backspace() {
@@ -72,7 +103,7 @@ internal fun SearchTemplateView(t: SearchTemplate) {
             }
             CarTextField(
                 value = query,
-                hint = t.searchHint ?: stringResource(R.string.media_action_search),
+                hint = voiceStatus?.let { stringResource(it) } ?: t.searchHint ?: stringResource(R.string.media_action_search),
                 editing = keyboard,
                 onFocus = {
                     if (host.driving) host.showParkedOnlyMessage() else keyboardWanted = true
@@ -81,6 +112,19 @@ internal fun SearchTemplateView(t: SearchTemplate) {
                 modifier = Modifier.weight(1f),
                 leadingIcon = Icons.Rounded.Search,
             )
+            if (voiceAvailable) {
+                IconButton(
+                    onClick = {
+                        keyboardWanted = false
+                        changed("")
+                        voiceStatus = R.string.tpl_voice_search_listening
+                        dictation.start()
+                    },
+                    modifier = Modifier.padding(start = 8.dp).size(d.touchTarget),
+                ) {
+                    Icon(Icons.Rounded.Mic, stringResource(R.string.tpl_voice_search), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
             ActionStripView(t.actionStrip, ActionLook.Strip, vertical = false, Modifier.padding(start = 12.dp))
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
