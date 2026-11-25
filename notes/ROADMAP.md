@@ -34,6 +34,10 @@ PR branches are cut from upstream `main` per feature; this file stays on
      matches none of the visible areas → placeholder; use the car's visible pixels.
    - Build blocker: dl.google.com (Android SDK) blocked by the session network policy.
 
+   - STATUS: user confirmed a right-edge tap fixes it. Fix committed on the dev branch
+     (placeholder-panel heuristic + diag lines `touch: mapping from …`); tests pass. Not yet
+     tested in the car; not yet a PR. Per-car persistence deferred.
+
 ## Other problems seen in the user's log (not yet triaged)
 - First attempts with built-in/self-signed certs get refused before the extracted p12 is
   tried; Mobis units may refuse retries (see README Kia Cerato row).
@@ -80,3 +84,16 @@ PR branches are cut from upstream `main` per feature; this file stays on
 - Multi-touch up to 10 pointers.
 - Voice: wake word, sherpa-onnx VAD, on-device Gemma (LiteRT-LM) for STT + intents, Piper/Kokoro
   TTS; optional cloud via LiveKit. GrapheneOS has no system speech recognizer.
+
+## User answers (2026-11-25)
+- Parked apps: all stuck loading in AARE (more testing to come).
+- Ungoogled Maps (nl-morphe-patches, gitlab.com/johninnld/nl-morphe-patches): its
+  "Native navigation for any Android Auto host" patch adds a Car App Library navigation
+  service and names AARE as a supported host; in AARE it shows an error that official
+  Android Auto is needed. AARE's ProjectedAppCatalog only knows com.google.android.apps.maps
+  (renamed package not found). Need: exact message, where it shows, package name.
+- Parked layout: full screen only when the app has a fullscreen option enabled; per-app
+  setting for how much of the screen it takes (e.g. maps left, music player right).
+- Voice: cloud API, open models, cheap and predictable pricing (no pay-as-you-go surprises).
+  Wants a general phone assistant too, not only in the car.
+- Defaults: navigation/music app chosen in settings and remembered.
