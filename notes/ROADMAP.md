@@ -70,7 +70,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
   the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
   the test-build workflow and every fix, for test releases.
 - Test releases: push the dev branch to `test-release` (tag pushes are refused by the git proxy); the workflow tags `<version>-test.<run>`. Only when the user says.
-- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package.
+- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package, feat/parked-app-replaces-media.
 
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
@@ -106,3 +106,15 @@ PR branches are cut from upstream `main` per feature; this file stays on
   Wants a general phone assistant too, not only in the car.
 - Voice hosting: user has a Raspberry Pi 4 (home server) and a light VPS → Lapin server viable.
 - Defaults: navigation/music app chosen in settings and remembered.
+
+## Test results, 1.6.0-test.2 (2026-11-25)
+- Touch: correct from the first tap. CONFIRMED.
+- Parked apps: worked flawlessly.
+- Ungoogled Maps: works, but starting navigation from a car-screen search result shows
+  "Google Maps car UI could not start: poe.<init> [int]"; starting from the phone works.
+  Cause is in nl-morphe-patches, not AARE: NativeCarContent.Action.run() tries class names
+  "poe" (26.43/26.44) then "pqg" (26.47) but stops at the first class that loads. On 26.47 a
+  different class is named "poe" with no (int) constructor -> NoSuchMethodException. Fix:
+  try each candidate until one has the (int) constructor. Issue drafted for the user to file.
+- Request: hide the media entry of an app that is also a parked app → branch
+  feat/parked-app-replaces-media (toggle "One icon for apps that are both").
