@@ -22,8 +22,12 @@ import kotlin.math.abs
  *    1:1 + margin — scaling by the declared panel would land every tap short of the far edge;
  *  - otherwise the declared panel, scaled into the visible area — correct whether the panel is
  *    smaller than the display (upscale) or larger (downscale);
+ *  - a panel that is exactly the frame size of one of the car's offered resolutions, but whose shape
+ *    is far from the car's visible area (e.g. an 800x480 panel on a 1920x720 wide screen): a
+ *    placeholder; the head unit really reports visible-area pixels of the stream, so map 1:1 +
+ *    margin from the first touch, instead of only after the runtime guard below catches it;
  *  - plus a runtime guard: a coordinate past the declared panel proves the panel is too small, so
- *    that axis falls back to the visible area.
+ *    that axis falls back to the visible area ([onFallback] says so, for the diagnostics log).
  *
  * The head unit's touches belong to its own screen, not to the stream AARE chose: with a lower
  * resolution picked (a setting or a vehicles.json cap), a panel the size of the car's screen is
@@ -43,6 +47,10 @@ class TouchMapper(
     nativeWidth: Int = layout.visibleWidth,
     nativeHeight: Int = layout.visibleHeight,
     private val calibration: TouchCalibration? = null,
+    /** The frame sizes (codec resolutions) of every configuration the car offered. */
+    offeredFrames: List<Pair<Int, Int>> = emptyList(),
+    /** Called once per axis when a touch past the declared panel makes it fall back to the visible area. */
+    private val onFallback: ((String) -> Unit)? = null,
 ) {
     private val visW = layout.visibleWidth.coerceAtLeast(1)
     private val visH = layout.visibleHeight.coerceAtLeast(1)
@@ -55,9 +63,24 @@ class TouchMapper(
     private val visiblePixels = touchWidth > natW && touchHeight > natH &&
         aspectClose(touchWidth, touchHeight, natW, natH)
 
+    /**
+     * The declared panel is one of the offered frame sizes but not the shape of the car's visible
+     * area: a placeholder, not the panel the coordinates are in. Taps come in the stream's visible pixels.
+     */
+    private val placeholderPanel = !visiblePixels && touchWidth > 0 && touchHeight > 0 &&
+        (touchWidth to touchHeight) in offeredFrames && !aspectWithin(touchWidth, touchHeight, natW, natH, PLACEHOLDER_ASPECT_GAP)
+
     // The source extent each axis's coordinates are expressed in; may latch to the visible area.
-    private var srcX = if (visiblePixels) natW else if (touchWidth > 0) touchWidth else visW
-    private var srcY = if (visiblePixels) natH else if (touchHeight > 0) touchHeight else visH
+    private var srcX = if (visiblePixels) natW else if (placeholderPanel) visW else if (touchWidth > 0) touchWidth else visW
+    private var srcY = if (visiblePixels) natH else if (placeholderPanel) visH else if (touchHeight > 0) touchHeight else visH
+
+    /** Why the source resolution is what it is, for the diagnostics log. */
+    val describe: String get() = when {
+        calibration != null -> "calibration"
+        visiblePixels -> "visible-area pixels of the car (${srcX}x$srcY)"
+        placeholderPanel -> "placeholder panel ${declX}x$declY, visible-area pixels of the stream (${srcX}x$srcY)"
+        else -> "panel ${srcX}x$srcY"
+    }
 
     private var downTime = 0L
 
@@ -67,8 +90,8 @@ class TouchMapper(
 
     /** A coordinate past the declared panel means the panel is too small: fall back to the visible area. */
     internal fun observe(x: Int, y: Int) {
-        if (declX > 0 && srcX == declX && x > declX) srcX = visW
-        if (declY > 0 && srcY == declY && y > declY) srcY = visH
+        if (declX > 0 && srcX == declX && x > declX) { srcX = visW; onFallback?.invoke("x=$x past the ${declX}-px panel width, now ${visW}") }
+        if (declY > 0 && srcY == declY && y > declY) { srcY = visH; onFallback?.invoke("y=$y past the ${declY}-px panel height, now ${visH}") }
     }
 
     internal fun mapX(x: Int): Float = clampX(x * (visW.toFloat() / srcX) + layout.marginLeft)
@@ -121,11 +144,17 @@ class TouchMapper(
     }
 
     private companion object {
+        /** How far apart the shapes of a placeholder panel and the visible area are at least (25%). */
+        const val PLACEHOLDER_ASPECT_GAP = 0.25f
+
         /** The two rectangles share an aspect ratio within ~1%. */
-        fun aspectClose(aw: Int, ah: Int, bw: Int, bh: Int): Boolean {
+        fun aspectClose(aw: Int, ah: Int, bw: Int, bh: Int): Boolean = aspectWithin(aw, ah, bw, bh, 0.01f)
+
+        /** The two rectangles' aspect ratios are within [tolerance] (relative) of each other. */
+        fun aspectWithin(aw: Int, ah: Int, bw: Int, bh: Int, tolerance: Float): Boolean {
             val a = aw.toFloat() / ah
             val b = bw.toFloat() / bh
-            return abs(a - b) <= 0.01f * b
+            return abs(a - b) <= tolerance * b
         }
     }
 }

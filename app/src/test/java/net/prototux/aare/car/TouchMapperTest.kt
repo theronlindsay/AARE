@@ -116,4 +116,54 @@ class TouchMapperTest {
         assertEquals(390.5f, m.mapX(521), 0.5f)
         assertEquals(810f, m.mapY(1080), 0.5f)
     }
+
+    /**
+     * A wide unit offering 1920x1080, 1280x720 and 800x480 with large height margins (visible
+     * 1920x720 / 1280x480) declares an 800x480 panel: one of its frame sizes, nowhere near its
+     * screen's shape. It reports taps in the stream's visible pixels, so they map 1:1 from the
+     * first touch, not only after one lands past x=800 and another past y=480.
+     */
+    @Test
+    fun placeholderPanelOfAnOfferedFrameSizeMapsVisiblePixelsFromTheStart() {
+        val frames = listOf(1920 to 1080, 1280 to 720, 800 to 480)
+        val m = TouchMapper(800, 480, ProjectionLayout.of(1920, 1080, 0, 360, null, null),
+            nativeWidth = 1920, nativeHeight = 720, offeredFrames = frames)
+        assertEquals(1920, m.panelWidth)
+        assertEquals(720, m.panelHeight)
+        assertEquals(400f, m.mapX(400), 0.001f)      // previously 400 * 1920/800 = 960
+        assertEquals(380f, m.mapY(200), 0.001f)      // 200 + 180 margin; previously 200 * 720/480 + 180
+    }
+
+    /** The same unit streaming 1280x720 (visible 1280x480): taps come in that stream's pixels. */
+    @Test
+    fun placeholderPanelWithALowerStreamMapsFromTheStreamsVisibleArea() {
+        val frames = listOf(1920 to 1080, 1280 to 720, 800 to 480)
+        val m = TouchMapper(800, 480, ProjectionLayout.of(1280, 720, 0, 240, null, null),
+            nativeWidth = 1920, nativeHeight = 720, offeredFrames = frames)
+        assertEquals(1280, m.panelWidth)
+        assertEquals(480, m.panelHeight)
+        assertEquals(1000f, m.mapX(1000), 0.001f)
+        assertEquals(120f, m.mapY(0), 0.001f)
+    }
+
+    /** A panel of the screen's own shape is a real panel, even when it is an offered frame size. */
+    @Test
+    fun offeredFrameSizeOfTheScreensShapeIsStillScaled() {
+        val m = TouchMapper(800, 480, ProjectionLayout.of(1280, 720, 0, 0, null, null),
+            nativeWidth = 1280, nativeHeight = 720, offeredFrames = listOf(1280 to 720, 800 to 480))
+        assertEquals(800, m.panelWidth)
+        assertEquals(640f, m.mapX(400), 0.001f)
+    }
+
+    /** A differently shaped panel that isn't an offered frame size keeps the old behaviour (and the guard). */
+    @Test
+    fun otherwiseShapedPanelNotAnOfferedFrameKeepsTheGuard() {
+        val fallbacks = mutableListOf<String>()
+        val m = TouchMapper(800, 480, ProjectionLayout.of(1920, 1080, 0, 360, null, null),
+            nativeWidth = 1920, nativeHeight = 720, offeredFrames = listOf(1920 to 1080), onFallback = { fallbacks += it })
+        assertEquals(800, m.panelWidth)
+        m.observe(1000, 100)
+        assertEquals(1920, m.panelWidth)
+        assertEquals(1, fallbacks.size)
+    }
 }

@@ -727,7 +727,9 @@ class CarSession(
         val inputCh = touchSize
         val native = offeredVideo.map(::visibleSize).maxByOrNull { it.first.toLong() * it.second }
         touch = TouchMapper(inputCh?.first ?: 0, inputCh?.second ?: 0, layout,
-            native?.first ?: layout.visibleWidth, native?.second ?: layout.visibleHeight, calibration = touchCalibration)
+            native?.first ?: layout.visibleWidth, native?.second ?: layout.visibleHeight, calibration = touchCalibration,
+            offeredFrames = offeredVideo.map { resolution(it.codecResolution) },
+            onFallback = { DiagLog.add("touch: $it") }).also { DiagLog.add("touch: mapping from ${it.describe}") }
         // The calibration tool works on the frame with the car's own area (a run in progress ends).
         videoConfig?.let { c -> calibration.onProjection(CalibrationController.Projection(layout.width, layout.height, carLayoutOf(c, layout.width, layout.height), touchCalibration)) }
     }
