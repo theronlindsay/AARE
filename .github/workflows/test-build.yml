@@ -2,8 +2,8 @@
 #
 # Runs only when a tag like 1.6.0-test.3 is pushed (nothing on ordinary pushes), and publishes
 # aare-test-<tag>.apk as a GitHub release whose tag equals the app's versionName, which is what
-# Obtainium compares. The APK is net.prototux.aare.test ("AARE Test"), so it installs next to
-# the regular app.
+# Obtainium compares. The APK is net.prototux.aare.test ("AARE Test"). It replaces the regular
+# app while testing: uninstall that first (both claim the same car-host permission and provider).
 #
 # Needs these repository secrets (a dedicated test key, kept the same so updates install):
 #   TEST_KEYSTORE_BASE64, TEST_KEYSTORE_PASSWORD, TEST_KEY_ALIAS, TEST_KEY_PASSWORD
@@ -71,5 +71,5 @@ jobs:
       - name: Publish
         run: |
           gh release create "$GITHUB_REF_NAME" --title "AARE Test $VERSION" \
-            --notes "Test build (net.prototux.aare.test) from $(git rev-parse --short HEAD). Installs next to the regular AARE." \
+            --notes "Test build (net.prototux.aare.test) from $(git rev-parse --short HEAD). Uninstall the regular AARE first; this replaces it while testing." \
             -- out/*
