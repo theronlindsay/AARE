@@ -26,6 +26,8 @@ object ProjectedAppCatalog {
     /** Known projection services, by (package, service class). */
     private val KNOWN = listOf(
         ComponentName("com.google.android.apps.maps", "com.google.android.apps.gmm.car.GmmCarProjectionService"),
+        // The same app patched and renamed (Ungoogled Maps): the service keeps its class name.
+        ComponentName("org.ungoogled.android.apps.maps", "com.google.android.apps.gmm.car.GmmCarProjectionService"),
     )
 
     /** The known projection apps actually installed (and still exporting the service) on this phone. */

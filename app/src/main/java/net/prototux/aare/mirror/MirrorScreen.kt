@@ -173,6 +173,7 @@ private fun replay(context: android.content.Context, viewW: Int, viewH: Int, poi
  */
 internal val KNOWN_NAVIGATION = setOf(
     "com.google.android.apps.maps",
+    "org.ungoogled.android.apps.maps", // Google Maps patched and renamed (Ungoogled Maps)
     "com.google.android.apps.mapslite", // Google Maps Go
     "com.waze",
     "com.here.app.maps",
