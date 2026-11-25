@@ -436,6 +436,10 @@ class Settings(context: Context) {
     var standaloneReplacesMedia: Boolean
         get() = prefs.getBoolean("standalone_replaces_media", false)
         set(v) = prefs.edit { putBoolean("standalone_replaces_media", v) }
+    /** The "not an Android Auto app" banner at the top of a launched (standalone) app. */
+    var standaloneBanner: Boolean
+        get() = prefs.getBoolean("standalone_banner", true)
+        set(v) = prefs.edit { putBoolean("standalone_banner", v) }
 
     /** Keep standalone apps active when Android links their display to the phone display. */
     var standaloneKeepScreenAwake: Boolean

@@ -612,6 +612,8 @@
     <string name="standalone_toggle_subtitle">Pick the apps below, and for each what it may do while driving.</string>
     <string name="standalone_replaces_media_title">One icon for apps that are both</string>
     <string name="standalone_replaces_media_subtitle">A music or video app you also allowed here shows once on the car screen: as the app itself while parked, as its media player while driving.</string>
+    <string name="standalone_banner_title">"Not an Android Auto app" banner</string>
+    <string name="standalone_banner_subtitle">The reminder at the top of an app opened this way. Turn it off so nothing covers the top of the app.</string>
     <string name="standalone_keep_awake_title">No-sleep mode for standalone apps</string>
     <string name="standalone_keep_awake_subtitle">Keeps the physical phone screen awake while an app is open. On affected Android 17 phones, virtual displays stop when the phone screen is off. Uses more battery.</string>
     <string name="standalone_need_root">Needs root or Shizuku. Set one up in Audio settings, then come back.</string>
