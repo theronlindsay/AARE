@@ -426,7 +426,7 @@ class CarRuntime(
         if (ui.drivingRestricted) ui.assistantStandalonePkg = null
         // The Cockpit's track pages (timed runs, lap timer, dyno) are parked only too.
         net.prototux.aare.obdapp.ObdApp.trackAllowed = !ui.drivingRestricted
-        if (changed) onDrivingRestricted?.invoke()
+        if (changed) { onDrivingRestricted?.invoke(); ui.launcherHidden = launcherHidden() }
         ui.theme = CarThemes.byId(settings.carThemeId).forPhone(context).withAccent(settings.carAccent, context)
         ui.layout = CarLayout.byId(settings.carLayoutId)
         ui.textScale = CarTextSize.byId(settings.carTextSize).fontScale
@@ -489,7 +489,7 @@ class CarRuntime(
             "wallpaper" -> main.post { ui.wallpaper = ""; applyScreenSettings() }
             // Apps shown or hidden from the phone: update the car's app list now.
             "hidden_apps", "phone_screen", "assistant_pkg", "app_order", "standalone_driving_rules",
-            "standalone_apps", "standalone_app_pkgs", "browser", "car_data_app" -> main.post { refreshApps() }
+            "standalone_apps", "standalone_app_pkgs", "browser", "car_data_app", "standalone_replaces_media" -> main.post { refreshApps() }
         }
     }
 
@@ -598,6 +598,13 @@ class CarRuntime(
         }.mapTo(HashSet()) { it.packageName }
     }
 
+    /** What the app grid leaves out: hidden built-ins, and one of each media + launched pair (see Settings.standaloneReplacesMedia). */
+    private fun launcherHidden(): Set<String> {
+        val hidden = launcherHiddenIds(settings.hiddenApps)
+        if (!settings.standaloneReplacesMedia) return hidden
+        return hidden + mergedPairIds(ui.apps.map { it.kind to it.packageName }, ui.drivingRestricted)
+    }
+
     /** Rescans car apps (package manager work and icons on a background thread). */
     fun refreshApps() {
         scope.launch {
@@ -684,7 +691,7 @@ class CarRuntime(
         ui.apps.addAll(entries)
         // A launched app whose rule is no longer "navigation" gives up the navigation slot.
         if (ui.app(ui.activeNavAppId)?.isNavigation == false) ui.activeNavAppId = null
-        ui.launcherHidden = launcherHiddenIds(hidden)
+        ui.launcherHidden = launcherHidden()
         // Restore the last navigation and media apps, so the dashboard isn't empty. Not a navigation app that
         // finished itself: its map card would stay blank instead of offering the picker.
         if (ui.activeNavAppId == null) {
@@ -1217,6 +1224,17 @@ class CarRuntime(
          * settings from the car itself, with no way back in short of reconnecting and using the phone.
          */
         val HIDEABLE_BUILTIN_IDS = setOf(PHONE_ID, NOTIFICATIONS_ID)
+
+        /**
+         * For each package that is both a media app and a launched app among [apps] (kind, package):
+         * the id of the one the grid leaves out. The media one while parked, the launched one while
+         * [driving] (paused then, unless its rule allows it, while the media app still plays).
+         */
+        fun mergedPairIds(apps: List<Pair<CarAppKind, String>>, driving: Boolean): Set<String> {
+            val media = apps.filter { it.first == CarAppKind.MEDIA }.mapTo(HashSet()) { it.second }
+            return apps.filter { it.first == CarAppKind.STANDALONE && it.second in media }
+                .mapTo(HashSet()) { (_, pkg) -> if (driving) standaloneId(pkg) else mediaId(pkg) }
+        }
 
         /** The built-ins of [hidden] (Settings.hiddenApps) the app grid leaves out; never Settings. */
         fun launcherHiddenIds(hidden: Set<String>): Set<String> = HIDEABLE_BUILTIN_IDS intersect hidden
