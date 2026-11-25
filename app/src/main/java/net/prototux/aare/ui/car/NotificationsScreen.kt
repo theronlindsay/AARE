@@ -88,8 +88,30 @@ internal fun NotificationsScreen(ui: CarUiState, modifier: Modifier) {
 
 /** The bell next to the clock, with the number of unseen notifications. */
 @Composable
-internal fun NotificationBell(ui: CarUiState, onClick: () -> Unit) {
+internal fun NotificationBell(ui: CarUiState, withClock: Boolean = false, horizontal: Boolean = true, onClick: () -> Unit) {
+    if (withClock) {
+        // As in Android Auto: one button with the time and the bell, opening the notifications.
+        val shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+        val content: @Composable () -> Unit = {
+            Clock()
+            BellIcon(ui)
+        }
+        val m = Modifier.clip(shape).carClickable(shape, onClick = onClick).padding(horizontal = 10.dp, vertical = 6.dp)
+        if (horizontal) androidx.compose.foundation.layout.Row(m, verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)) { content() }
+        else androidx.compose.foundation.layout.Column(m, horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(2.dp)) { content() }
+        return
+    }
     Box(Modifier.size(40.dp).clip(CircleShape).carClickable(CircleShape, onClick = onClick), contentAlignment = Alignment.Center) {
+        BellIcon(ui)
+    }
+}
+
+/** The bell, with the count of notifications not seen yet. */
+@Composable
+private fun BellIcon(ui: CarUiState) {
+    Box(contentAlignment = Alignment.Center) {
         // The badge inside the bell's circle, not on its edge, where the circle cut it off.
         BadgedBox(badge = {
             if (ui.unseen > 0) Badge { Text(if (ui.unseen > 9) stringResource(R.string.notif_unseen_overflow) else "${ui.unseen}") }

@@ -322,6 +322,8 @@
     <string name="dash_card_map">Map</string>
     <string name="dash_card_media">Music</string>
     <string name="dash_card_calendar">Next calendar event</string>
+    <string name="setup_toggle_clock_in_bell_title">Clock in the notification button</string>
+    <string name="setup_toggle_clock_in_bell_subtitle">The bar\'s clock and the bell share one button that opens the notifications, as in Android Auto. Needs the clock among the bar\'s items.</string>
     <string name="dash_card_notification">Latest notification</string>
     <string name="dash_card_weather">Weather</string>
     <string name="dash_card_home">Home</string>

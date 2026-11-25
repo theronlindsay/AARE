@@ -604,6 +604,11 @@ class Settings(context: Context) {
         get() = prefs.getString("rail_widgets", null)?.split(',')?.filter { it.isNotBlank() } ?: listOf("clock", "battery", "weather")
         set(v) = prefs.edit { putString("rail_widgets", v.joinToString(",")) }
 
+    /** The rail's clock sits in the notification button, beside the bell, as in Android Auto. */
+    var clockInBell: Boolean
+        get() = prefs.getBoolean("clock_in_bell", false)
+        set(v) = prefs.edit { putBoolean("clock_in_bell", v) }
+
     /** The car launcher's order: app keys (package names, or the built-in apps' ids), first first. */
     var appOrder: List<String>
         get() = prefs.getString("app_order", null)?.split('\n')?.filter { it.isNotBlank() } ?: emptyList()

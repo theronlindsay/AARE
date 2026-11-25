@@ -382,8 +382,10 @@ private fun RailContent(state: CarUiState, actions: CarActions, horizontal: Bool
     // One poll of the phone's status for the whole rail: its battery widget and network icons share it.
     val phoneStatus = rememberPhoneStatus()
     // What the head unit draws itself (its clock, signal or battery) is left out of the rail.
+    // The clock in the bell's button replaces the clock widget.
+    val clockInBell = state.clockInBell && state.chrome.clock && RailWidget.CLOCK in state.railWidgets
     val railWidgets = state.railWidgets.filter {
-        when (it) { RailWidget.CLOCK -> state.chrome.clock; RailWidget.BATTERY -> state.chrome.battery; else -> true }
+        when (it) { RailWidget.CLOCK -> state.chrome.clock && !clockInBell; RailWidget.BATTERY -> state.chrome.battery; else -> true }
     }
     if (horizontal) {
         Row(
@@ -398,7 +400,7 @@ private fun RailContent(state: CarUiState, actions: CarActions, horizontal: Bool
             val status: @Composable () -> Unit = { Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 RailWidgets(widgets, state.weather.takeIf { state.weatherInBar }, phoneStatus, horizontal = true, spacing = 10.dp)
                 if (state.chrome.phoneSignal) NetworkStatusIcons(phoneStatus)
-                NotificationBell(state) { bell() }
+                NotificationBell(state, withClock = clockInBell, horizontal = true) { bell() }
             } }
             if (state.driverOnRight) status() else driverEnd()
             Row(Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
@@ -421,7 +423,7 @@ private fun RailContent(state: CarUiState, actions: CarActions, horizontal: Bool
                 Spacer(Modifier.height(4.dp))
                 if (state.chrome.phoneSignal) NetworkStatusIcons(phoneStatus)
             }
-            NotificationBell(state) { bell() }
+            NotificationBell(state, withClock = clockInBell, horizontal = false) { bell() }
             // The apps are the only weighted child, so they are measured last and are the part that
             // gives up space: menu and mic (the only way home on touch-only units) keep their size.
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
