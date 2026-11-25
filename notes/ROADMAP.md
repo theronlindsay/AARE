@@ -70,7 +70,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
   the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
   the test-build workflow and every fix, for test releases.
 - Test releases: push a tag like `1.6.0-test.1` on the dev branch, only when the user says.
-- Branches: fix/touch-placeholder-panel (touch fix).
+- Branches: fix/touch-placeholder-panel, fix/parked-app-start-errors, feat/ungoogled-maps-package.
 
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
