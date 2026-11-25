@@ -53,6 +53,7 @@ internal fun CarSettingsScreen(settings: Settings, modifier: Modifier) {
     var audio by remember { mutableStateOf(settings.carAudio) }
     var darkBar by remember { mutableStateOf(settings.darkBar) }
     var railWidgets by remember { mutableStateOf(RailWidget.parse(settings.railWidgets)) }
+    var clockInBell by remember { mutableStateOf(settings.clockInBell) }
     var cards by remember { mutableStateOf(DashCard.parse(settings.dashboardCards)) }
     var mapBig by remember { mutableStateOf(settings.dashboardMapBig) }
     var agendaCount by remember { mutableStateOf(settings.calendarAgendaCount) }
@@ -86,6 +87,7 @@ internal fun CarSettingsScreen(settings: Settings, modifier: Modifier) {
         item {
             RailWidgetsEditor(railWidgets, LocalCarDimens.current.touchTarget) { railWidgets = it; settings.railWidgets = it.map(RailWidget::id) }
         }
+        item { SwitchRow(stringResource(R.string.setup_toggle_clock_in_bell_title), clockInBell) { clockInBell = it; settings.clockInBell = it } }
         item {
             DashboardCardsEditor(cards, LocalCarDimens.current.touchTarget, available = DashCard.entries.filter { it != DashCard.CAR || settings.obdAdapter }) { cards = it; settings.dashboardCards = it.map(DashCard::id) }
         }

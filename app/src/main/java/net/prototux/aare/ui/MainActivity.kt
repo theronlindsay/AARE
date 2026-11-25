@@ -1033,6 +1033,7 @@ private fun CarScreenSettings(settings: Settings, refresh: Int) {
     var darkBar by remember { mutableStateOf(settings.darkBar) }
     var splitScreen by remember { mutableStateOf(settings.splitScreen) }
     var railWidgets by remember { mutableStateOf(RailWidget.parse(settings.railWidgets)) }
+    var clockInBell by remember { mutableStateOf(settings.clockInBell) }
     var textSize by remember { mutableStateOf(settings.carTextSize) }
     var controlSize by remember { mutableStateOf(settings.carControlSize) }
     var cards by remember { mutableStateOf(DashCard.parse(settings.dashboardCards)) }
@@ -1094,6 +1095,9 @@ private fun CarScreenSettings(settings: Settings, refresh: Int) {
             }
             Spacer(Modifier.height(12.dp))
             RailWidgetsEditor(railWidgets, 48.dp) { railWidgets = it; settings.railWidgets = it.map(RailWidget::id) }
+            Toggle(stringResource(R.string.setup_toggle_clock_in_bell_title), stringResource(R.string.setup_toggle_clock_in_bell_subtitle), clockInBell) {
+                clockInBell = it; settings.clockInBell = it
+            }
             Spacer(Modifier.height(12.dp))
             val sizeOptions = listOf(
                 CarTextSize.DEFAULT.id to stringResource(R.string.setup_choice_size_default),

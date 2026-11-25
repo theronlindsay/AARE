@@ -143,6 +143,8 @@ class CarUiState {
     var darkBar by mutableStateOf(false)
     /** The rail's status widgets, in order (a setting). */
     var railWidgets by mutableStateOf(RailWidget.DEFAULT)
+    /** The rail's clock goes in the notification button, beside the bell (a setting). */
+    var clockInBell by mutableStateOf(false)
     /** The rail's chosen apps, in order (a setting; empty = the rail's built-in set). */
     var railApps by mutableStateOf<List<String>>(emptyList())
     /** A narrower rail: smaller icons, tighter spacing (a setting). */
