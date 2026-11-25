@@ -27,6 +27,20 @@ PR branches are cut from upstream `main` per feature; this file stays on
    - Fix plan: (a) persist latched source size per head unit; (b) maybe: a declared
      panel whose aspect matches no offered visible area → start from visible area.
      Need AARE's own log (`input:` / `projection` lines) to confirm stream vs native coords.
+   - AARE diag log (2026-11-23/24, wireless, standard_m_6, AAP 4.1): `input: display 0 panel
+     800x480`. Default choice is likely 1920x1080 (visible 1920x720) → pre-latch taps are
+     2.4x/1.5x off. Verbose log still needed for the `projection` line.
+   - Heuristic candidate: declared panel == codec size of an offered config AND its shape
+     matches none of the visible areas → placeholder; use the car's visible pixels.
+   - Build blocker: dl.google.com (Android SDK) blocked by the session network policy.
+
+## Other problems seen in the user's log (not yet triaged)
+- First attempts with built-in/self-signed certs get refused before the extracted p12 is
+  tried; Mobis units may refuse retries (see README Kia Cerato row).
+- `Binding socket to network N failed: EPERM` on wireless join (12:39, twice).
+- Shizuku helper died mid-session ("the Shizuku helper went away"; "the helper didn't start").
+- Repeated "no frame from the encoder for ~1.3 s" while navigating.
+- Video focus flips native→projected right after connecting.
    - Need from user: Diagnostics log lines `input: display … panel WxH` and
      `projection WxH…` for their car; car make/model.
    - Candidate fix: remember the latched source size per head unit (KnownHeadUnits)
