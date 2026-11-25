@@ -428,6 +428,15 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("standalone_apps", false)
         set(v) = prefs.edit { putBoolean("standalone_apps", v) }
 
+    /**
+     * An app that is both a media app and a launched (standalone) app shows one icon on the car's
+     * app grid: the launched app while parked, its media app while driving (when the launched one
+     * can't be used). Both stay available to the dashboard, now playing and the car's media keys.
+     */
+    var standaloneReplacesMedia: Boolean
+        get() = prefs.getBoolean("standalone_replaces_media", false)
+        set(v) = prefs.edit { putBoolean("standalone_replaces_media", v) }
+
     /** Keep standalone apps active when Android links their display to the phone display. */
     var standaloneKeepScreenAwake: Boolean
         get() = prefs.getBoolean("standalone_keep_screen_awake", false)

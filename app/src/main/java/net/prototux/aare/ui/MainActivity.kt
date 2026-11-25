@@ -1473,6 +1473,7 @@ private fun AppGroup(title: String) {
 private fun StandaloneAppsSection(settings: Settings, ctx: android.content.Context) {
     var enabled by remember { mutableStateOf(settings.standaloneApps) }
     var keepAwake by remember { mutableStateOf(settings.standaloneKeepScreenAwake) }
+    var replacesMedia by remember { mutableStateOf(settings.standaloneReplacesMedia) }
     var mediaVideo by remember { mutableStateOf(settings.mediaVideo) }
     var allowed by remember { mutableStateOf(settings.standaloneAppPackages) }
     var rules by remember { mutableStateOf(settings.standaloneDrivingRules) }
@@ -1497,6 +1498,9 @@ private fun StandaloneAppsSection(settings: Settings, ctx: android.content.Conte
             }
             Toggle(stringResource(R.string.standalone_media_video_title), stringResource(R.string.standalone_media_video_subtitle), mediaVideo) {
                 mediaVideo = it; settings.mediaVideo = it
+            }
+            Toggle(stringResource(R.string.standalone_replaces_media_title), stringResource(R.string.standalone_replaces_media_subtitle), replacesMedia) {
+                replacesMedia = it; settings.standaloneReplacesMedia = it
             }
             val apps by produceState<List<LaunchableApp>?>(null) {
                 value = withContext(Dispatchers.IO) { launchableApps(ctx) }
