@@ -19,6 +19,14 @@ PR branches are cut from upstream `main` per feature; this file stays on
    - Alt lead: a UI config update from the head unit re-lays out (`relayOut`) a few
      seconds in.
    - Car: Kia CL4, Mobis head unit. Declared panel: 800x480.
+   - DriveDeck log of the car: offers 1920x1080 (margin 0x360 → 1920x720 visible),
+     1280x720 (0x240 → 1280x480), 800x480 (0x77). Real screen is ultra-wide; the
+     800x480 panel is a legacy placeholder whose shape matches none of them.
+   - Fits the latch hypothesis: x latches after a tap past x=800, y after y>480.
+   - Workaround now: in-app touch calibration (replaces auto mapping).
+   - Fix plan: (a) persist latched source size per head unit; (b) maybe: a declared
+     panel whose aspect matches no offered visible area → start from visible area.
+     Need AARE's own log (`input:` / `projection` lines) to confirm stream vs native coords.
    - Need from user: Diagnostics log lines `input: display … panel WxH` and
      `projection WxH…` for their car; car make/model.
    - Candidate fix: remember the latched source size per head unit (KnownHeadUnits)
