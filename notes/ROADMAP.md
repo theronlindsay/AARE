@@ -18,6 +18,7 @@ PR branches are cut from upstream `main` per feature; this file stays on
      visible area. Per-axis, per-session, never remembered.
    - Alt lead: a UI config update from the head unit re-lays out (`relayOut`) a few
      seconds in.
+   - Car: Kia CL4, Mobis head unit. Declared panel: 800x480.
    - Need from user: Diagnostics log lines `input: display … panel WxH` and
      `projection WxH…` for their car; car make/model.
    - Candidate fix: remember the latched source size per head unit (KnownHeadUnits)
