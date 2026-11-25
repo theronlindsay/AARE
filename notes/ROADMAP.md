@@ -65,6 +65,13 @@ PR branches are cut from upstream `main` per feature; this file stays on
    - Check Lapin (github.com/prototux/lapin), already car-aware, before building new.
 3. **Ungoogled Maps support** (works in DriveDeck) — likely falls out of #1.
 
+## Workflow
+- One branch per fix, cut from upstream main (e.g. `fix/touch-placeholder-panel`), pushed to
+  the fork; PRs to prototux/AARE only when the user asks. The dev branch carries the notes,
+  the test-build workflow and every fix, for test releases.
+- Test releases: push a tag like `1.6.0-test.1` on the dev branch, only when the user says.
+- Branches: fix/touch-placeholder-panel (touch fix).
+
 ## Constraint
 - Everything should be upstreamable to prototux/AARE as PRs; no long-lived fork.
 
@@ -91,9 +98,11 @@ PR branches are cut from upstream `main` per feature; this file stays on
   "Native navigation for any Android Auto host" patch adds a Car App Library navigation
   service and names AARE as a supported host; in AARE it shows an error that official
   Android Auto is needed. AARE's ProjectedAppCatalog only knows com.google.android.apps.maps
-  (renamed package not found). Need: exact message, where it shows, package name.
+  (renamed package not found). Package: org.ungoogled.android.apps.maps. Still need the exact
+  message and where it shows. The message is not in the patch's code, so it is Maps' own.
 - Parked layout: full screen only when the app has a fullscreen option enabled; per-app
   setting for how much of the screen it takes (e.g. maps left, music player right).
 - Voice: cloud API, open models, cheap and predictable pricing (no pay-as-you-go surprises).
   Wants a general phone assistant too, not only in the car.
+- Voice hosting: user has a Raspberry Pi 4 (home server) and a light VPS → Lapin server viable.
 - Defaults: navigation/music app chosen in settings and remembered.
