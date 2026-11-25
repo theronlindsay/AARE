@@ -3,6 +3,10 @@
 PR branches are cut from upstream `main` per feature; this file stays on
 `claude/aare-improvements-2fkbg2`.
 
+## Phone
+- GrapheneOS (Android 12+), not rooted → parked apps need Shizuku via wireless
+  debugging; restart after every reboot, needs Wi-Fi to start.
+
 ## Primary apps
 - Ungoogled Maps (works in DriveDeck, not AARE), de-Waze, ViVi
 
