@@ -91,7 +91,7 @@ private fun BottomBar(state: CarUiState, actions: CarActions) {
             if (state.screen is CarScreen.App || last == null) actions.goHome() else actions.openApp(last)
         }
         Box(Modifier.weight(1f)) { ActivityPill(state, actions) }
-        NotificationBell(state) { state.apps.firstOrNull { it.kind == CarAppKind.NOTIFICATIONS }?.let(actions::openApp) }
+        NotificationBell(state) { state.toggleNotifications(actions) }
         MicButton(state.listening, stop = state.voiceButtonIsStop) { actions.assistant() }
     }
 }

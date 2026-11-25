@@ -377,7 +377,7 @@ private fun RailContent(state: CarUiState, actions: CarActions, horizontal: Bool
         else RailButton(Icons.Rounded.Home, stringResource(R.string.dash_menu_home), false, touch, iconSize) { actions.goHome() }
     }
     val mic: @Composable () -> Unit = { MicButton(state.listening, touch, iconSize, stop = state.voiceButtonIsStop) { actions.assistant() } }
-    val bell = { state.apps.firstOrNull { it.kind == CarAppKind.NOTIFICATIONS }?.let(actions::openApp) }
+    val bell = { state.toggleNotifications(actions) }
     val container = MaterialTheme.colorScheme.surfaceContainerLowest
     // One poll of the phone's status for the whole rail: its battery widget and network icons share it.
     val phoneStatus = rememberPhoneStatus()
