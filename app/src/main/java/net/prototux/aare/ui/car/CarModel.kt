@@ -85,6 +85,8 @@ data class CarGeometry(
 class CarUiState {
     var night by mutableStateOf(true)
     var screen by mutableStateOf<CarScreen>(CarScreen.Dashboard)
+    /** Where the bell was pressed from, for the bell to go back there (see [toggleNotifications]). */
+    var beforeNotifications: CarScreen? = null
     /**
      * Every app the car can open, in the user's order: also the built-ins hidden from the app grid,
      * since the bell, the call card, the rail's phone button and the steering-wheel keys open them
@@ -179,6 +181,26 @@ class CarUiState {
     var controlScale by mutableStateOf(1f)
 
     fun app(id: String?): CarAppEntry? = apps.firstOrNull { it.id == id }
+
+    /**
+     * The bell as a toggle: opens the notifications, or, when they are already open, goes back to
+     * where they were opened from (the dashboard, the launcher or the app).
+     */
+    fun toggleNotifications(actions: CarActions) {
+        val notifications = apps.firstOrNull { it.kind == CarAppKind.NOTIFICATIONS } ?: return
+        val current = screen
+        if (current is CarScreen.App && current.appId == notifications.id) {
+            when (val before = beforeNotifications) {
+                is CarScreen.App -> app(before.appId)?.let(actions::openApp) ?: actions.goHome()
+                CarScreen.Launcher -> actions.openLauncher()
+                else -> actions.goHome()
+            }
+            beforeNotifications = null
+        } else {
+            beforeNotifications = current
+            actions.openApp(notifications)
+        }
+    }
 }
 
 /** The smart-home buttons and values the car shows. */
